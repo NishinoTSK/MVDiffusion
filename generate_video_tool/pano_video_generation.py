@@ -37,7 +37,7 @@ def generate_video(image_paths, out_dir, gen_video=True):
 
     tmp_video_path = '/tmp/' + str(uuid.uuid4()) + '.mp4'
     save_video_path = os.path.join(out_dir, 'video.mp4')
-    out = cv2.VideoWriter(save_video_path, cv2.VideoWriter_fourcc(*'MP4V'), 60, size)
+    out = cv2.VideoWriter(save_video_path, cv2.VideoWriter_fourcc(*'mp4v'), 60, size)
 
     interval_deg = 0.5
     num_frames = int(360 / interval_deg)
@@ -53,14 +53,25 @@ def generate_video(image_paths, out_dir, gen_video=True):
    # os.system(f"ffmpeg -y -i {tmp_video_path} -vcodec libx264 {save_video_path}")
 
 if __name__ == '__main__':
-    data_dir='logs/tb_logs/test_mp3d_outpaint=2/version_0/images'
     out_dir='out_paint_example'
-    for scene in tqdm(os.listdir(data_dir)):
-        data_path = os.path.join(data_dir, scene)
-        image_paths = [os.path.join(data_path, f'{i}.png') for i in range(8)]
-        _out_dir=os.path.join(out_dir, scene)
-        os.makedirs(_out_dir, exist_ok=True)
-        for i, image_path in enumerate(image_paths):
-            img = cv2.imread(image_path)
-            cv2.imwrite(os.path.join(_out_dir, '{}.png'.format(i)), img)
-        generate_video(image_paths, _out_dir, gen_video=False)
+    
+    image_paths = []
+    for root, dirs, files in os.walk(r'/content/MVDiffusion/outputs/results--20240813-230104'):
+        # select file name
+        for file in files:
+            # check the extension of files
+            if file.endswith('.png'):
+                # print whole path of files
+                print(os.path.join(root, file))
+                image_paths.append(os.path.join(root, file))
+    generate_video(image_paths, out_dir, gen_video=True)
+
+    # for scene in tqdm(os.listdir(data_dir)):
+    #     data_path = os.path.join(data_dir, scene)
+    #     image_paths = [os.path.join(data_path) for i in range(8)]
+    #     _out_dir=os.path.join(out_dir, scene)
+    #     os.makedirs(_out_dir, exist_ok=True)
+    #     for i, image_path in enumerate(image_paths):
+    #         img = cv2.imread(image_path)
+    #         cv2.imwrite(os.path.join(_out_dir, '{}.png'.format(i)), img)
+    #     generate_video(image_paths, _out_dir, gen_video=False)
