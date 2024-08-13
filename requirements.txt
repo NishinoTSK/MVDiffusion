@@ -1,8 +1,8 @@
 einops==0.6.1
-diffusers==0.16.1
-transformers==4.28.1
+diffusers
+transformer
 pytorch-lightning==1.5.0
-torch==2.0.0
+torch
 opencv-python==4.7.0.72
 protobuf==3.20.3
 wrapt==1.15.0
