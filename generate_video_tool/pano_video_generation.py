@@ -62,7 +62,6 @@ if __name__ == '__main__':
             # check the extension of files
             if file.endswith('.png'):
                 # print whole path of files
-                print(os.path.join(root, file))
                 image_paths.append(os.path.join(root, file))
     generate_video(image_paths, out_dir, gen_video=True)
 
