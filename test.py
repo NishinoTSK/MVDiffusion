@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     if args.ckpt_path is not None:
         model.load_state_dict(torch.load(args.ckpt_path, map_location='cpu')[
-            'state_dict'], strict=True)
+            'state_dict'], strict=False)
 
     logger = TensorBoardLogger(
         save_dir='logs/tb_logs', name=args.exp_name, default_hp_metric=False)
