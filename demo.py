@@ -104,52 +104,54 @@ else:
             print(f'Negative promts: ' +  negative_prompt)
             args.text= positive_prompt
     
-resolution=config['dataset']['resolution']
-Rs=[]
-Ks=[]
+resolution = config['dataset']['resolution']
+Rs = []
+Ks = []
 for i in range(8):
-    degree = (45*i) % 360
-    K, R = get_K_R(90, degree, 0,
-                    resolution, resolution)
-
+    degree = (45 * i) % 360
+    K, R = get_K_R(90, degree, 0, resolution, resolution)
     Rs.append(R)
     Ks.append(K)
 
-images=torch.zeros((1,8,resolution,resolution, 3)).cuda()
+images = torch.zeros((1, 8, resolution, resolution, 3), device="cuda")
 if img is not None:
-    images[0,0]=img
-
+    images[0, 0] = img
 
 if args.text_path is not None:
-    prompt=[]
+    prompt = []
     with open(args.text_path, 'r') as f:
         for i, line in enumerate(f):
             prompt.append(line.strip())
-    if len(prompt)<8:
+    if len(prompt) < 8:
         raise ValueError('text file should contain 8 lines for each camera view')
-    args.text=prompt[0]
+    args.text = prompt[0]
 else:
-    prompt=[args.text]*8
-K=torch.tensor(Ks).cuda()[None]
-R=torch.tensor(Rs).cuda()[None]
+    prompt = [args.text] * 8
 
-batch= {
-        'images': images,
-        'prompt': prompt,
-        'R': R,
-        'K': K
-    }
-images_pred=model.inference(batch)
-#res_dir=os.path.join('outputs/',args.text[:20])
-res_dir=os.path.join('outputs/',f'results'+datetime.now().strftime('--%Y%m%d-%H%M%S'))
+# >>>>>>> FIX: converte para np.float32 antes de tensor
+Ks = np.asarray(Ks, dtype=np.float32)
+Rs = np.asarray(Rs, dtype=np.float32)
+
+K = torch.from_numpy(Ks).float().to("cuda").unsqueeze(0)  # [1, 8, 3, 3]
+R = torch.from_numpy(Rs).float().to("cuda").unsqueeze(0)  # [1, 8, 3, 3]
+
+batch = {
+    'images': images,
+    'prompt': prompt,
+    'R': R,
+    'K': K
+}
+images_pred = model.inference(batch)
+
+res_dir = os.path.join('outputs/', f'results' + datetime.now().strftime('--%Y%m%d-%H%M%S'))
 print('saved to the folder: {}'.format(res_dir))
 os.makedirs(res_dir, exist_ok=True)
 with open(os.path.join(res_dir, 'prompt.txt'), 'w') as f:
-    f.write(args.text)    
-image_paths=[]
+    f.write(args.text)
+image_paths = []
 for i in range(8):
-    im = Image.fromarray(images_pred[0,i])
-    image_path=os.path.join(res_dir, '{}.png'.format(i))
+    im = Image.fromarray(images_pred[0, i])
+    image_path = os.path.join(res_dir, '{}.png'.format(i))
     image_paths.append(image_path)
     im.save(image_path)
 generate_video(image_paths, res_dir, args.gen_video)
